@@ -46,40 +46,89 @@ app.post('/insert', (req, res) => {
     });
   });
 
-  app.get('/api/sat_results', (req, res) => {
-    // Use the connection pool to execute a query to retrieve SAT results data
-    pool.getConnection((err, connection) => {
-      if (err) {
-        console.error('Error getting database connection:', err);
+app.get('/api/sat_results', (req, res) => {
+  // Use the connection pool to execute a query to retrieve SAT results data
+  pool.getConnection((err, connection) => {
+    if (err) {
+      console.error('Error getting database connection:', err);
+      res.status(500).json({ error: 'Internal server error' });
+      return;
+    }
+
+    connection.query('SELECT * FROM sat_results', (queryErr, results) => {
+      connection.release(); // Release the connection back to the pool
+
+      if (queryErr) {
+        console.error('Error fetching SAT results:', queryErr);
         res.status(500).json({ error: 'Internal server error' });
         return;
       }
-  
-      connection.query('SELECT * FROM sat_results', (queryErr, results) => {
-        connection.release(); // Release the connection back to the pool
-  
-        if (queryErr) {
-          console.error('Error fetching SAT results:', queryErr);
-          res.status(500).json({ error: 'Internal server error' });
-          return;
-        }
-  
-        // Respond with the retrieved data as JSON
-        res.json(results);
-      });
+
+      // Respond with the retrieved data as JSON
+      res.json(results);
     });
   });
-
-app.get('/getRank', (req, res) => {
-  // Handle getting the rank based on the name.
-  const name = req.query.name;
-  const found = satResults.find(result => result.name === name);
-  if (found) {
-    res.json({ rank: satResults.indexOf(found) + 1 });
-  } else {
-    res.status(404).json({ error: 'Name not found' });
-  }
 });
+
+app.post('/api/getRank', (req, res) => {
+  const name = req.body.name;
+
+  // Use the connection pool to execute a SELECT query to retrieve the SAT score
+  pool.query('SELECT satScore FROM sat_results WHERE name = ?', [name], (err, results) => {
+    if (err) {
+      console.error('Error getting SAT score:', err);
+      res.status(500).json({ error: 'Internal server error' });
+      return;
+    }
+
+    // Check if a row was found
+    if (results.length === 0) {
+      res.status(404).json({ error: 'Candidate not found' });
+      return;
+    }
+
+    // Calculate the rank based on the SAT score (you need to implement your rank calculation logic here)
+    const satScore = results[0].satScore;
+    const rank = calculateRank(satScore, (err, rank) => {
+      if(err){
+        console.error(err);
+        res.status(500).json({ error: 'Internal server error' });
+        return;
+      }
+
+      // Respond with the rank
+      res.json({ rank: rank, message: 'Rank retrieved successfully' });
+    });
+
+  });
+});
+
+function calculateRank(satScore, callback) {
+  // Query the database to count the number of candidates with higher SAT scores
+  const rankQuery = 'SELECT COUNT(*) AS `rank` FROM sat_results WHERE satScore > ?';
+  
+  // Execute the query
+  pool.query(rankQuery, [satScore], (err, results) => {
+    if (err) {
+      console.error('Error calculating rank:', err);
+      callback(err, null); // Handle the error
+    } else {
+      // Extract the rank from the query results
+      const rank = results[0].rank;
+      
+      if (rank !== undefined) {
+        // Add 1 to the rank to get the candidate's rank
+        const finalRank = rank + 1;
+        callback(null, finalRank); // Pass the calculated rank
+      } else {
+        console.error('Rank calculation result is undefined');
+        callback('Rank calculation failed', null); // Handle unexpected result
+      }
+    }
+  });
+}
+
+  
 
 app.put('/api/update-score', (req, res) => {
   const name = req.body.name;
