@@ -1,64 +1,53 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 
 function UpdateScore() {
-  const [formData, setFormData] = useState({
-    name: '',
-    satScore: '',
-  });
+  const [name, setName] = useState('');
+  const [satScore, setSatScore] = useState('');
+  const [message, setMessage] = useState('');
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
-  };
+  const handleUpdate = () => {
+    // Construct the request payload
+    const payload = {
+      name: name,
+      satScore: satScore,
+    };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    const baseURL = 'http://localhost:5000';
-    const updateScoreEndpoint = `${baseURL}/api/update-score`;
-
-    try {
-      const response = await axios.put(updateScoreEndpoint, formData);
-      console.log('Update Score Response:', response.data);
-      // Optionally, you can display a success message to the user
-    } catch (error) {
-      console.error('Error updating score:', error);
-      // Optionally, you can display an error message to the user
-    }
+    // Make a PUT request to update the score
+    fetch('http://localhost:5000/api/update-score', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    })
+      .then((response) => {
+        if (response.ok) {
+          return response.json();
+        } else {
+          throw new Error('Failed to update score');
+        }
+      })
+      .then((data) => {
+        setMessage(data.message);
+      })
+      .catch((error) => {
+        setMessage('Error updating score: ' + error.message);
+      });
   };
 
   return (
     <div>
-      <h2>Update SAT Score</h2>
-      <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label htmlFor="name">Candidate Name:</label>
-          <input
-            type="text"
-            id="name"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="satScore">New SAT Score:</label>
-          <input
-            type="number"
-            id="satScore"
-            name="satScore"
-            value={formData.satScore}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <button type="submit">Update Score</button>
-      </form>
+      <h2>Update Score</h2>
+      <div>
+        <label>Name:</label>
+        <input type="text" value={name} onChange={(e) => setName(e.target.value)} />
+      </div>
+      <div>
+        <label>SAT Score:</label>
+        <input type="number" value={satScore} onChange={(e) => setSatScore(e.target.value)} />
+      </div>
+      <button onClick={handleUpdate}>Update Score</button>
+      <div>{message}</div>
     </div>
   );
 }

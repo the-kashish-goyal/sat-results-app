@@ -81,18 +81,25 @@ app.get('/getRank', (req, res) => {
   }
 });
 
-app.put('/updateScore', (req, res) => {
-  // Handle updating the SAT score by name.
+app.put('/api/update-score', (req, res) => {
   const name = req.body.name;
   const newScore = req.body.satScore;
-  const found = satResults.find(result => result.name === name);
-  if (found) {
-    found.satScore = newScore;
-    found.passed = newScore > 30 ? true : false;
-    res.json({ message: 'Score updated successfully' });
-  } else {
-    res.status(404).json({ error: 'Name not found' });
-  }
+
+  // Use the connection pool to execute an UPDATE query
+  pool.query('UPDATE sat_results SET satScore = ? WHERE name = ?', [newScore, name], (err, results) => {
+    if (err) {
+      console.error('Error updating SAT score:', err);
+      res.status(500).json({ error: 'Internal server error' });
+      return;
+    }
+
+    // Check if a row was affected (indicating a successful update)
+    if (results.affectedRows === 1) {
+      res.json({ message: 'SAT score updated successfully' });
+    } else {
+      res.status(404).json({ error: 'Candidate not found' });
+    }
+  });
 });
 
 app.delete('/deleteRecord', (req, res) => {
