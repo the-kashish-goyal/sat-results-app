@@ -15,7 +15,6 @@ const pool = mysql.createPool({
     queueLimit: 0
   });
   
-  // Test the MySQL connection
   pool.getConnection((err, connection) => {
     if (err) {
       console.error('Database connection failed:', err);
@@ -31,10 +30,8 @@ app.post('/insert', (req, res) => {
     const { name, address, city, country, pincode, satScore } = req.body;
     const passed = satScore > 30 ? 1 : 0;
   
-    // SQL query to insert data into the 'sat_results' table
     const sql = 'INSERT INTO sat_results (name, address, city, country, pincode, satScore, passed) VALUES (?, ?, ?, ?, ?, ?, ?)';
   
-    // Execute the query
     pool.query(sql, [name, address, city, country, pincode, satScore, passed], (err, results) => {
       if (err) {
         console.error('Error inserting data into MySQL:', err);
@@ -47,7 +44,6 @@ app.post('/insert', (req, res) => {
   });
 
 app.get('/api/sat_results', (req, res) => {
-  // Use the connection pool to execute a query to retrieve SAT results data
   pool.getConnection((err, connection) => {
     if (err) {
       console.error('Error getting database connection:', err);
@@ -56,7 +52,7 @@ app.get('/api/sat_results', (req, res) => {
     }
 
     connection.query('SELECT * FROM sat_results', (queryErr, results) => {
-      connection.release(); // Release the connection back to the pool
+      connection.release(); 
 
       if (queryErr) {
         console.error('Error fetching SAT results:', queryErr);
@@ -64,7 +60,6 @@ app.get('/api/sat_results', (req, res) => {
         return;
       }
 
-      // Respond with the retrieved data as JSON
       res.json(results);
     });
   });
@@ -73,7 +68,6 @@ app.get('/api/sat_results', (req, res) => {
 app.post('/api/getRank', (req, res) => {
   const name = req.body.name;
 
-  // Use the connection pool to execute a SELECT query to retrieve the SAT score
   pool.query('SELECT satScore FROM sat_results WHERE name = ?', [name], (err, results) => {
     if (err) {
       console.error('Error getting SAT score:', err);
@@ -81,13 +75,11 @@ app.post('/api/getRank', (req, res) => {
       return;
     }
 
-    // Check if a row was found
     if (results.length === 0) {
       res.status(404).json({ error: 'Candidate not found' });
       return;
     }
 
-    // Calculate the rank based on the SAT score (you need to implement your rank calculation logic here)
     const satScore = results[0].satScore;
     const rank = calculateRank(satScore, (err, rank) => {
       if(err){
@@ -96,7 +88,6 @@ app.post('/api/getRank', (req, res) => {
         return;
       }
 
-      // Respond with the rank
       res.json({ rank: rank, message: 'Rank retrieved successfully' });
     });
 
@@ -104,25 +95,21 @@ app.post('/api/getRank', (req, res) => {
 });
 
 function calculateRank(satScore, callback) {
-  // Query the database to count the number of candidates with higher SAT scores
   const rankQuery = 'SELECT COUNT(*) AS `rank` FROM sat_results WHERE satScore > ?';
   
-  // Execute the query
   pool.query(rankQuery, [satScore], (err, results) => {
     if (err) {
       console.error('Error calculating rank:', err);
-      callback(err, null); // Handle the error
+      callback(err, null); 
     } else {
-      // Extract the rank from the query results
       const rank = results[0].rank;
       
       if (rank !== undefined) {
-        // Add 1 to the rank to get the candidate's rank
         const finalRank = rank + 1;
-        callback(null, finalRank); // Pass the calculated rank
+        callback(null, finalRank); 
       } else {
         console.error('Rank calculation result is undefined');
-        callback('Rank calculation failed', null); // Handle unexpected result
+        callback('Rank calculation failed', null); 
       }
     }
   });
@@ -154,7 +141,6 @@ app.put('/api/update-score', (req, res) => {
 app.delete('/api/deleteRecord', (req, res) => {
   const name = req.body.name;
 
-  // Execute a DELETE query to remove the record with the given name
   const deleteQuery = 'DELETE FROM sat_results WHERE name = ?';
 
   pool.query(deleteQuery, [name], (err, results) => {
@@ -164,7 +150,6 @@ app.delete('/api/deleteRecord', (req, res) => {
       return;
     }
 
-    // Check if any records were deleted
     if (results.affectedRows === 1) {
       res.json({ message: 'Record deleted successfully' });
     } else {

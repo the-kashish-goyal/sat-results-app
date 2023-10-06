@@ -5,12 +5,10 @@ function DeleteRecord() {
   const [message, setMessage] = useState('');
 
   const handleDeleteRecord = () => {
-    // Construct the request payload
     const payload = {
       name: name,
     };
 
-    // Make a DELETE request to delete the record
     fetch('http://localhost:5000/api/deleteRecord', {
       method: 'DELETE',
       headers: {

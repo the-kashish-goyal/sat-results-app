@@ -6,13 +6,11 @@ function UpdateScore() {
   const [message, setMessage] = useState('');
 
   const handleUpdate = () => {
-    // Construct the request payload
     const payload = {
       name: name,
       satScore: satScore,
     };
 
-    // Make a PUT request to update the score
     fetch('http://localhost:5000/api/update-score', {
       method: 'PUT',
       headers: {

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 function ViewData() {
   const [data, setData] = useState([]);
-  const baseURL =   'http://localhost:5000'; // Use your actual server URL
   const url ="http://localhost:5000/api/sat_results";
 
   const fetchInfo =  () => {

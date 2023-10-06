@@ -6,12 +6,10 @@ function GetRank() {
   const [message, setMessage] = useState('');
 
   const handleGetRank = () => {
-    // Construct the request payload
     const payload = {
       name: name,
     };
 
-    // Make a POST request to get the rank
     fetch('http://localhost:5000/api/getRank', {
       method: 'POST',
       headers: {

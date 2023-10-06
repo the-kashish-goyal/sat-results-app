@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios'; // You need to install axios if not already done.
+import axios from 'axios'; 
 
 function InsertData() {
   const [formData, setFormData] = useState({
@@ -22,10 +22,8 @@ function InsertData() {
     e.preventDefault();
     
     try {
-      // Send a POST request to the backend to insert the data.
       const response = await axios.post('http://localhost:5000/insert', formData);
 
-      // Clear the form and display a success message.
       setFormData({
         name: '',
         address: '',
