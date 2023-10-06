@@ -151,16 +151,26 @@ app.put('/api/update-score', (req, res) => {
   });
 });
 
-app.delete('/deleteRecord', (req, res) => {
-  // Handle deleting a record by name.
-  const name = req.query.name;
-  const foundIndex = satResults.findIndex(result => result.name === name);
-  if (foundIndex !== -1) {
-    satResults.splice(foundIndex, 1);
-    res.json({ message: 'Record deleted successfully' });
-  } else {
-    res.status(404).json({ error: 'Name not found' });
-  }
+app.delete('/api/deleteRecord', (req, res) => {
+  const name = req.body.name;
+
+  // Execute a DELETE query to remove the record with the given name
+  const deleteQuery = 'DELETE FROM sat_results WHERE name = ?';
+
+  pool.query(deleteQuery, [name], (err, results) => {
+    if (err) {
+      console.error('Error deleting record:', err);
+      res.status(500).json({ error: 'Internal server error' });
+      return;
+    }
+
+    // Check if any records were deleted
+    if (results.affectedRows === 1) {
+      res.json({ message: 'Record deleted successfully' });
+    } else {
+      res.status(404).json({ error: 'Record not found' });
+    }
+  });
 });
 
 const PORT = process.env.PORT || 5000;
