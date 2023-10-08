@@ -1,6 +1,6 @@
 For uncommented code go through the latest commit. 
 Also, in the database configuration, please add credentials to your own database(server.js file). 
-Submitted By Kashihs Goyal
+Submitted By Kashish Goyal
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
