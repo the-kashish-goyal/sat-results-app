@@ -1,5 +1,17 @@
 For uncommented code go through the latest commit. 
-Also, in the database configuration, please add credentials to your own database(server.js file). 
+
+Also, in the database configuration, please add credentials to your own mySQL database (in server.js file). 
+
+To add a database, database configuration should be 
+
+|id|name|address|city|country|pincode|satScore|passed
+-
+
+
+**id** field will be automatically generated for the entries that are passed without any id, else it will create an id by default.
+
+**passed** field will be automatically populated by the code
+
 Submitted By Kashish Goyal
 # Getting Started with Create React App
 
