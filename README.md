@@ -1,4 +1,5 @@
 For uncommented code go through the latest commit. Submitted by Kashish Goyal
+Also, in the database configuration, please add credentials to your own database(server.js file)
 
 # Getting Started with Create React App
 
